@@ -6,26 +6,26 @@ Run with: uvicorn main:app --reload
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routers import upload, chat, submit
+from routers import upload, chat, submit, answer
 
 app = FastAPI(
     title="TP Learning Supervision System",
     description="AI multi-agent platform for supervised TP evaluation",
-    version="1.0.0",
+    version="2.0.0",
 )
 
-# Allow the frontend (your friend's app) to call this API
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # tighten this in production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 app.include_router(upload.router, prefix="/api")
-app.include_router(chat.router, prefix="/api")
+app.include_router(chat.router,   prefix="/api")
 app.include_router(submit.router, prefix="/api")
+app.include_router(answer.router, prefix="/api")
 
 
 @app.get("/health")
