@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { useMemo } from "react";
 import { InlineCodeEditor } from "./InlineCodeEditor";
 import { HighlightedLine } from "@/lib/syntax";
@@ -11,9 +12,27 @@ type Props = {
   state?: "active" | "locked" | "done";
   onExecute?: () => void;
   isLast?: boolean;
+  /** Seconds since this question became active (shown when state === "active"). */
+  elapsedSeconds?: number;
 };
 
-export function QuestionCard({ question, index, value, onChange, state = "active", onExecute, isLast }: Props) {
+function formatElapsed(totalSec: number): string {
+  const s = Math.max(0, Math.floor(totalSec));
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return m > 0 ? `${m}:${r.toString().padStart(2, "0")}` : `0:${r.toString().padStart(2, "0")}`;
+}
+
+export function QuestionCard({
+  question,
+  index,
+  value,
+  onChange,
+  state = "active",
+  onExecute,
+  isLast,
+  elapsedSeconds,
+}: Props) {
   const isCompletion = question.type === "completion";
   const isLocked = state === "locked";
   const isDone = state === "done";
@@ -48,16 +67,27 @@ export function QuestionCard({ question, index, value, onChange, state = "active
             Q{index + 1}
           </span>
           <span className="text-muted-foreground/70">@question</span>
-          <span className="text-foreground">{question.id}</span>
-          <span
-            className={`ml-auto rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ${
-              isCompletion
-                ? "bg-accent/15 text-accent"
-                : "bg-secondary/15 text-secondary"
-            }`}
-          >
-            {question.type}
-          </span>
+          <span className="min-w-0 truncate text-foreground">{question.id}</span>
+          <div className="ml-auto flex shrink-0 items-center gap-2">
+            {state === "active" && elapsedSeconds !== undefined && (
+              <span
+                className="flex items-center gap-1 rounded bg-background/80 px-2 py-0.5 font-mono text-[10px] tabular-nums text-primary"
+                title="Time on this question"
+              >
+                <span aria-hidden>⏱</span>
+                {formatElapsed(elapsedSeconds)}
+              </span>
+            )}
+            <span
+              className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ${
+                isCompletion
+                  ? "bg-accent/15 text-accent"
+                  : "bg-secondary/15 text-secondary"
+              }`}
+            >
+              {question.type}
+            </span>
+          </div>
         </div>
         <p className="mt-2 font-mono text-[13px] leading-relaxed text-foreground">
           <span className="text-muted-foreground/60">/** </span>
@@ -72,13 +102,13 @@ export function QuestionCard({ question, index, value, onChange, state = "active
             code={question.code}
             value={value}
             onChange={onChange}
-            fileName={`${question.id.replace(".", "_")}.java`}
+            fileName={`${question.id.replace(".", "_")}.code`}
           />
         ) : (
           <CodeEditor
             value={value}
             onChange={onChange}
-            fileName={`${question.id.replace(".", "_")}.java`}
+            fileName={`${question.id.replace(".", "_")}.code`}
             referenceCode={question.code}
           />
         )}
@@ -130,7 +160,7 @@ function CodeEditor({
       <div className="flex items-center border-b border-border bg-background/80">
         {referenceCode && (
           <div className="flex items-center gap-2 border-r border-border px-3 py-2 font-mono text-[11px] text-muted-foreground">
-            <span>📄</span>reference.java
+            <span>📄</span>reference.code
           </div>
         )}
         <div className="flex items-center gap-2 border-r border-border bg-code-bg px-3 py-2 font-mono text-[11px] text-foreground">
@@ -138,7 +168,7 @@ function CodeEditor({
           <span className="ml-1 size-1.5 rounded-full bg-accent" />
         </div>
         <div className="ml-auto flex items-center gap-3 px-3 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-          <span>UTF-8</span><span>LF</span><span>Java</span>
+          <span>UTF-8</span><span>LF</span><span>code</span>
         </div>
       </div>
 

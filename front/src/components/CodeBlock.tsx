@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 type Props = {
   code: string;
   label?: string;
@@ -13,7 +14,7 @@ export function CodeBlock({ code, label }: Props) {
           <span className="size-2.5 rounded-full bg-success/70" />
         </div>
         <span className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-          {label ?? "snippet.java"}
+          {label ?? "snippet.code"}
         </span>
       </div>
       <pre className="overflow-x-auto p-4 text-[13px] leading-relaxed text-code-fg">

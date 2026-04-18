@@ -1,8 +1,10 @@
+/* eslint-disable prettier/prettier */
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { sampleLab } from "@/lib/lab-data";
+import { sampleLab, labToTpData } from "@/lib/lab-data";
 import { labStore } from "@/lib/lab-store";
+import type { Lab, LabPart, Question } from "@/lib/lab-data";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -23,23 +25,108 @@ export const Route = createFileRoute("/")({
   component: UploadPage,
 });
 
+const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+
+/** Convert the backend tp_data shape into the frontend Lab type */
+function tpDataToLab(tpData: {
+  title: string;
+  parts: Array<{
+    part: number;
+    title: string;
+    questions: Array<{
+      id: string;
+      type: string;
+      task: string;
+      code?: string;
+    }>;
+  }>;
+}): Lab {
+  return {
+    title: tpData.title,
+    parts: tpData.parts.map((p): LabPart => ({
+      part: p.part,
+      title: p.title,
+      questions: p.questions.map((q): Question => ({
+        id: q.id,
+        type: q.type as "code" | "completion",
+        task: q.task,
+        code: q.code,
+      })),
+    })),
+  };
+}
+
 function UploadPage() {
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
-  const [fileName, setFileName] = useState<string | null>(null);
+  const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<string | null>(null);
 
-  const handleFile = (file: File) => {
-    setFileName(file.name);
+  const handleFile = (f: File) => {
+    setFile(f);
+    setError(null);
+  };
+
+  const uploadToBackend = async (f: File): Promise<void> => {
+    setUploadProgress("Uploading PDF…");
+
+    const formData = new FormData();
+    formData.append("file", f);
+
+    const res = await fetch(`${API_BASE}/api/upload`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!res.ok) {
+      const detail = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(detail.detail ?? "Upload failed");
+    }
+
+    setUploadProgress("Analysing lab content…");
+    const data = await res.json();
+
+    // Store session
+    labStore.setSessionId(data.session_id);
+    labStore.setInitialMessages(data.messages ?? []);
+
+    // Convert and store lab
+    const lab = tpDataToLab(data.tp_data);
+    labStore.setLab(lab);
   };
 
   const start = async () => {
     setLoading(true);
-    // Simulated transformation delay
-    await new Promise((r) => setTimeout(r, 900));
-    labStore.setLab(sampleLab);
-    navigate({ to: "/lab" });
+    setError(null);
+
+    try {
+      if (file) {
+        await uploadToBackend(file);
+      } else {
+        setUploadProgress("Loading sample lab…");
+        labStore.setLab(sampleLab);
+        const boot = await fetch(`${API_BASE}/api/lab/bootstrap`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tp_data: labToTpData(sampleLab) }),
+        });
+        if (!boot.ok) {
+          const detail = await boot.json().catch(() => ({ detail: boot.statusText }));
+          throw new Error(detail.detail ?? "Could not start lab session");
+        }
+        const { session_id } = await boot.json();
+        labStore.setSessionId(session_id);
+      }
+      navigate({ to: "/lab" });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+      setUploadProgress(null);
+    }
   };
 
   return (
@@ -118,13 +205,16 @@ function UploadPage() {
             </div>
             <div>
               <p className="font-semibold">
-                {fileName ?? "Drop your PDF here or click to browse"}
+                {file ? file.name : "Drop your PDF here or click to browse"}
               </p>
               <p className="mt-1 font-mono text-xs text-muted-foreground">
-                {fileName ? "ready to forge" : "PDF · max 50MB"}
+                {file
+                  ? `${(file.size / 1024 / 1024).toFixed(2)} MB · ready to forge`
+                  : "PDF · max 10MB"}
               </p>
             </div>
           </button>
+
           <input
             ref={inputRef}
             type="file"
@@ -136,6 +226,13 @@ function UploadPage() {
             }}
           />
 
+          {/* Error state */}
+          {error && (
+            <div className="mt-4 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 font-mono text-[12px] text-destructive">
+              ⚠ {error}
+            </div>
+          )}
+
           <button
             onClick={start}
             disabled={loading}
@@ -144,18 +241,20 @@ function UploadPage() {
             {loading ? (
               <>
                 <span className="size-4 animate-spin rounded-full border-2 border-accent-foreground/30 border-t-accent-foreground" />
-                Forging your lab…
+                {uploadProgress ?? "Forging your lab…"}
               </>
             ) : (
               <>
-                {fileName ? "Start the lab" : "Try with sample PDF"}
+                {file ? "Upload & start the lab" : "Try with sample PDF"}
                 <span aria-hidden>→</span>
               </>
             )}
           </button>
 
           <p className="mt-3 text-center font-mono text-[11px] text-muted-foreground">
-            // demo: any upload loads the sample Spring Boot lab
+            {file
+              ? "// your PDF will be parsed by AI and turned into an interactive lab"
+              : "// demo: no upload loads the sample Spring Boot lab"}
           </p>
         </motion.div>
 

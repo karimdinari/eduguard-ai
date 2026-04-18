@@ -6,7 +6,7 @@ Run with: uvicorn main:app --reload
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routers import upload, chat, submit, answer
+from routers import upload, chat, submit, answer, lab
 
 app = FastAPI(
     title="TP Learning Supervision System",
@@ -26,6 +26,7 @@ app.include_router(upload.router, prefix="/api")
 app.include_router(chat.router,   prefix="/api")
 app.include_router(submit.router, prefix="/api")
 app.include_router(answer.router, prefix="/api")
+app.include_router(lab.router, prefix="/api")
 
 
 @app.get("/health")

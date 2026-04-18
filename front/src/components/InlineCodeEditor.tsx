@@ -52,13 +52,13 @@ export function InlineCodeEditor({ code, value, onChange, fileName = "Student.ja
         <div className="ml-auto flex items-center gap-3 px-3 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
           <span>UTF-8</span>
           <span>LF</span>
-          <span>Java</span>
+          <span>code</span>
         </div>
       </div>
 
       {/* Breadcrumb */}
       <div className="flex items-center gap-1 border-b border-border/60 bg-background/40 px-4 py-1.5 font-mono text-[10px] text-muted-foreground">
-        <span>src</span><span>›</span><span>main</span><span>›</span><span>java</span>
+        <span>src</span><span>›</span><span>main</span><span>›</span><span>code</span>
         <span>›</span><span className="text-foreground">{fileName}</span>
       </div>
 

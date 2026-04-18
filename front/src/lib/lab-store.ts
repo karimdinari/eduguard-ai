@@ -1,9 +1,10 @@
-// Simple in-memory lab store (non-persistent). Holds the active lab loaded
-// from a "PDF upload" so the lab route can read it.
+/* eslint-disable prettier/prettier */
 import type { Lab } from "./lab-data";
 
 let activeLab: Lab | null = null;
 let answers: Record<string, string> = {};
+let sessionId: string | null = null;
+let initialMessages: Array<{ role: string; content: string; agent: string; ts: number }> = [];
 
 export const labStore = {
   setLab(lab: Lab) {
@@ -22,8 +23,22 @@ export const labStore = {
   getAllAnswers() {
     return { ...answers };
   },
+  setSessionId(id: string) {
+    sessionId = id;
+  },
+  getSessionId(): string | null {
+    return sessionId;
+  },
+  setInitialMessages(msgs: typeof initialMessages) {
+    initialMessages = msgs;
+  },
+  getInitialMessages() {
+    return initialMessages;
+  },
   reset() {
     activeLab = null;
     answers = {};
+    sessionId = null;
+    initialMessages = [];
   },
 };

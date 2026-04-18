@@ -16,6 +16,37 @@ export type Lab = {
   parts: LabPart[];
 };
 
+/** Shape expected by the backend `tp_data` field (Agent A output / bootstrap). */
+export type TpData = {
+  title: string;
+  parts: Array<{
+    part: number;
+    title: string;
+    questions: Array<{
+      id: string;
+      type: string;
+      task: string;
+      code?: string;
+    }>;
+  }>;
+};
+
+export function labToTpData(lab: Lab): TpData {
+  return {
+    title: lab.title,
+    parts: lab.parts.map((p) => ({
+      part: p.part,
+      title: p.title,
+      questions: p.questions.map((q) => ({
+        id: q.id,
+        type: q.type,
+        task: q.task,
+        ...(q.code !== undefined ? { code: q.code } : {}),
+      })),
+    })),
+  };
+}
+
 export const sampleLab: Lab = {
   title: "Spring Boot Lab - Student Management API (Mixed Questions)",
   parts: [

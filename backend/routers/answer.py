@@ -54,4 +54,6 @@ def submit_verification(req: VerifyRequest):
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    if result.get("error"):
+        raise HTTPException(status_code=400, detail=result["error"])
     return result

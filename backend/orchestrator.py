@@ -15,6 +15,42 @@ _sessions: dict[str, dict] = {}
 
 # ── Public API called by routers ──────────────────────────────────────────────
 
+def _build_roadmap_from_tp_data(tp_data: dict) -> list:
+    """Same shape as agent_a._build_roadmap — used when tp_data comes from the client."""
+    roadmap = []
+    for part in tp_data.get("parts", []):
+        questions = part.get("questions", [])
+        q_summary = ", ".join(q["id"] for q in questions)
+        roadmap.append({
+            "step": part["part"],
+            "title": part["title"],
+            "description": f"Complete questions: {q_summary}",
+            "questions": questions,
+        })
+    return roadmap
+
+
+def handle_lab_bootstrap(tp_data: dict) -> dict:
+    """
+    Create a session from structured lab data (e.g. sample lab or client-resumed lab)
+    without running Agent A on a PDF.
+    """
+    session = new_session()
+    sid = session["session_id"]
+    session["tp_data"] = tp_data
+    session["tp_filename"] = tp_data.get("title", "lab")
+    session["tp_raw_text"] = session["tp_filename"]
+    session["tp_file_type"] = "structured"
+    session["objectives"] = []
+    session["constraints"] = []
+    session["roadmap"] = _build_roadmap_from_tp_data(tp_data)
+    session["current_step"] = 0
+    title = tp_data.get("title", "Lab")
+    add_message(session, role="system", content=f"Lab workspace ready: **{title}**", agent="system")
+    _sessions[sid] = session
+    return {"session_id": sid}
+
+
 def handle_upload(filename: str, file_bytes: bytes) -> dict:
     """
     Called when the student uploads a TP file.
