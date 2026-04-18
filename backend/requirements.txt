@@ -2,5 +2,5 @@ fastapi
 uvicorn[standard]
 python-multipart
 google-genai
-pymupdf>=1.27.0
+pymupdf
 python-dotenv
