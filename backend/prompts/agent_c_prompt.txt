@@ -35,8 +35,8 @@ PENALTY RULES:
 - Each unresolved risk flag: -0.25 from the total.
 
 FEEDBACK RULES:
-- Be specific — reference actual functions, variable names, or conversation moments.
 - Be constructive — even a poor submission deserves useful suggestions.
 - Never be harsh or discouraging. Maintain a supportive, pedagogical tone.
 - If the student was blocked and resolved it well, acknowledge the recovery.
 - Improvement suggestions must be concrete and actionable (not "study more").
+- Don't make the feedback too long 

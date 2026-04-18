@@ -63,18 +63,30 @@ def _build_context(session: dict) -> str:
         for s in session["roadmap"]
     )
 
+    # Derive problem statement from available session fields if not explicitly set
+    tp = session.get("tp_data", {})
+    title = tp.get("title", session.get("tp_filename", "Untitled TP"))
+    objectives = session.get("objectives", [])
+    constraints = session.get("constraints", [])
+    expected_outputs = session.get("expected_outputs", [])
+
+    problem_statement = session.get("problem_statement") or (
+        f"{title}\n\nObjectives:\n" + "\n".join(f"- {o}" for o in objectives)
+        if objectives else title
+    )
+
     return f"""
 PROBLEM STATEMENT:
-{session['problem_statement']}
+{problem_statement}
 
 OBJECTIVES:
-{chr(10).join('- ' + o for o in session['objectives'])}
+{chr(10).join('- ' + o for o in objectives) or 'Not specified.'}
 
 CONSTRAINTS:
-{chr(10).join('- ' + c for c in session['constraints'])}
+{chr(10).join('- ' + c for c in constraints) or 'Not specified.'}
 
 EXPECTED OUTPUTS:
-{chr(10).join('- ' + o for o in session['expected_outputs'])}
+{chr(10).join('- ' + o for o in expected_outputs) or 'Not specified.'}
 
 ROADMAP:
 {roadmap}
@@ -86,9 +98,9 @@ FULL CHAT HISTORY:
 {full_chat}
 
 ANTI-CHEAT SUMMARY:
-- Final risk score: {session['risk_score']} / 100
-- Flags raised: {', '.join(session['risk_flags']) or 'none'}
-- Understanding questions asked: {session['b_questions_asked']}
+- Final risk score: {session.get('risk_score', 0)} / 100
+- Flags raised: {', '.join(session.get('risk_flags', [])) or 'none'}
+- Understanding questions asked: {session.get('b_questions_asked', 0)}
 - Student was blocked at some point: {any(m['content'].startswith('⚠️') for m in session['messages'])}
 """
 
