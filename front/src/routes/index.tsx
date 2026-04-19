@@ -2,20 +2,19 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { sampleLab, labToTpData } from "@/lib/lab-data";
 import { labStore } from "@/lib/lab-store";
 import type { Lab, LabPart, Question } from "@/lib/lab-data";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "LabForge — Upload your lab PDF" },
+      { title: "eduGuard-AI — Upload your lab PDF" },
       {
         name: "description",
         content:
           "Turn lab PDFs into interactive, AI-graded coding exercises. Upload, work through structured parts, submit.",
       },
-      { property: "og:title", content: "LabForge — Interactive coding labs from PDFs" },
+      { property: "og:title", content: "eduGuard-AI — Interactive coding labs from PDFs" },
       {
         property: "og:description",
         content: "Upload a lab PDF and let students solve it part by part with AI grading.",
@@ -99,27 +98,16 @@ function UploadPage() {
   };
 
   const start = async () => {
+    if (!file) {
+      setError("Please choose a PDF file first.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
-      if (file) {
-        await uploadToBackend(file);
-      } else {
-        setUploadProgress("Loading sample lab…");
-        labStore.setLab(sampleLab);
-        const boot = await fetch(`${API_BASE}/api/lab/bootstrap`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ tp_data: labToTpData(sampleLab) }),
-        });
-        if (!boot.ok) {
-          const detail = await boot.json().catch(() => ({ detail: boot.statusText }));
-          throw new Error(detail.detail ?? "Could not start lab session");
-        }
-        const { session_id } = await boot.json();
-        labStore.setSessionId(session_id);
-      }
+      await uploadToBackend(file);
       navigate({ to: "/lab" });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
@@ -134,7 +122,7 @@ function UploadPage() {
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         <div className="flex items-center gap-2">
           <div className="size-8 rounded-lg bg-gradient-brand shadow-glow" />
-          <span className="font-mono font-bold tracking-tight">LabForge</span>
+          <span className="font-mono font-bold tracking-tight">eduGuard-AI</span>
         </div>
         <span className="hidden font-mono text-xs text-muted-foreground sm:block">
           v0.1 · ai-graded
@@ -235,7 +223,7 @@ function UploadPage() {
 
           <button
             onClick={start}
-            disabled={loading}
+            disabled={loading || !file}
             className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-accent px-6 py-3.5 font-bold text-accent-foreground shadow-glow transition-transform hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60"
           >
             {loading ? (
@@ -245,7 +233,7 @@ function UploadPage() {
               </>
             ) : (
               <>
-                {file ? "Upload & start the lab" : "Try with sample PDF"}
+                Upload & start the lab
                 <span aria-hidden>→</span>
               </>
             )}
@@ -254,7 +242,7 @@ function UploadPage() {
           <p className="mt-3 text-center font-mono text-[11px] text-muted-foreground">
             {file
               ? "// your PDF will be parsed by AI and turned into an interactive lab"
-              : "// demo: no upload loads the sample Spring Boot lab"}
+              : "// choose a PDF to continue — max 10MB"}
           </p>
         </motion.div>
 

@@ -5,7 +5,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { labStore } from "@/lib/lab-store";
 import { sampleLab, labToTpData } from "@/lib/lab-data";
 import { QuestionCard } from "@/components/QuestionCard";
-import { InstructorChat } from "@/components/InstructorChat";
 import { VerificationModal } from "@/components/VerificationModal";
 import { AgentBFeedback } from "@/components/Agentfeedback";
 import type { FeedbackState } from "@/components/Agentfeedback";
@@ -21,7 +20,7 @@ import { MessageSquare, Sparkles } from "lucide-react";
 export const Route = createFileRoute("/lab")({
   head: () => ({
     meta: [
-      { title: "Lab Workspace — LabForge" },
+      { title: "Lab Workspace — eduGuard-AI" },
       { name: "description", content: "Work through your lab part by part." },
     ],
   }),
@@ -395,7 +394,7 @@ function LabPage() {
           </div>
           <Link to="/" className="ml-3 flex items-center gap-1.5">
             <div className="size-3.5 rounded-sm bg-gradient-brand" />
-            <span className="font-bold text-foreground">LabForge IDE</span>
+            <span className="font-bold text-foreground">eduGuard-AI IDE</span>
           </Link>
         </div>
         <div className="hidden truncate md:block">{lab.title}</div>
@@ -629,9 +628,6 @@ function LabPage() {
           </div>
         </main>
       </div>
-
-      {/* Instructor chat */}
-      <InstructorChat />
 
       {/* Verification modal */}
       <VerificationModal

@@ -50,7 +50,11 @@ export function QuestionCard({
       {dimmed && (
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 z-20 flex items-start justify-end p-3 backdrop-blur-[3px] bg-background/55"
+          className={`pointer-events-none absolute inset-0 z-20 flex items-start justify-end p-3 ${
+            isDone
+              ? "backdrop-blur-[3px] bg-background/55"
+              : "backdrop-blur-md bg-background/70"
+          }`}
         >
           <span className={`rounded px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-widest ${
             isDone ? "bg-success/20 text-success" : "bg-muted/40 text-muted-foreground"
@@ -61,7 +65,7 @@ export function QuestionCard({
       )}
       <fieldset disabled={dimmed} className={dimmed ? "select-none" : ""}>
       {/* Question header — like a code section comment */}
-      <header className="border-b border-border bg-background/60 px-5 py-3">
+      <header className={`border-b border-border bg-background/60 px-5 py-3 ${isLocked ? "opacity-55 blur-[1px]" : ""}`}>
         <div className="flex items-center gap-2 font-mono text-[11px] text-muted-foreground">
           <span className="rounded bg-primary/20 px-1.5 py-0.5 font-bold text-primary">
             Q{index + 1}
@@ -89,7 +93,7 @@ export function QuestionCard({
             </span>
           </div>
         </div>
-        <p className="mt-2 font-mono text-[13px] leading-relaxed text-foreground">
+        <p className={`mt-2 font-mono text-[13px] leading-relaxed text-foreground ${isLocked ? "opacity-70" : ""}`}>
           <span className="text-muted-foreground/60">/** </span>
           {question.task}
           <span className="text-muted-foreground/60"> */</span>
