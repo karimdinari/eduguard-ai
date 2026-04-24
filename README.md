@@ -16,10 +16,11 @@ Upload a lab PDF → get an interactive IDE in the browser. Students work throug
 
 ---
 
-## Demo
+# 🎥 Project Demo Video
 
-> 🎥 [Watch the demo on YouTube](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
+## 📺 Watch the YouTube Video
 
+[![Watch the video](https://img.youtube.com/vi/48FaQLjrRAQ/0.jpg)](https://www.youtube.com/watch?v=48FaQLjrRAQ)
 ---
 
 ## Multi-Agent Architecture
